@@ -7,72 +7,111 @@ import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import st from "./queue.module.css"
 
-interface IStack<T> {
-  push: (item: T) => void;
-  pop: () => void;
-  delete: () => void;
+interface IQueue<T> {
+  enqueue: (item: T) => void;
+  dequeue: () => void;
   peak: () => T | null;
-} 
+}
 
-class Stack<T> implements IStack<T> {
-  container: T[] = [];
+class Queue<T> implements IQueue<T> {
+  container: (T | null)[] = [];
+  head = 0;
+  tail = 0;
+  private readonly size: number = 0;
+  length: number = 0;
 
-  push = (item: T): void => {
-    this.container.push(item)
+  constructor(size: number) {
+    this.size = size;
+    this.container = Array(size);
+  }
+
+  enqueue = (item: T) => {
+    if (this.length >= this.size) {
+      throw new Error("Maximum length exceeded");
+    }
+
+    if(this.tail === this.size-1 || (this.length === 0 && this.tail === this.head)){
+      this.tail = 0
+    } else {
+      this.tail++;
+    }
+    this.length++;
+    this.container[this.tail] = item;
   };
 
-  pop = (): void => {
-    this.container.pop()
+  dequeue = () => {
+    if (this.isEmpty()) {
+      throw new Error("No elements in the queue");
+    }
+
+    delete(this.container[this.head])
+    if(this.head === this.size-1){
+      this.head = 0;
+    } else {
+      this.head++;
+    }
+    this.length--;
   };
 
   delete = (): void => {
-    this.container = []
+    for(let i = 0; i < this.container.length; i++) {
+      delete(this.container[i])
+    }
+    this.head = 0;
+    this.tail = 0;
+    this.length = 0;
   }
 
   peak = (): T | null => {
-    if(this.container.length !== 0) {
-      return this.container[this.container.length - 1]
-    } else {
+    if (this.isEmpty()) {
+      throw new Error("No elements in the queue");
+    }
+    
+    if(this.isEmpty()){
       return null;
+    } else {
+      return this.container[this.head];
     }
   };
 
-  getSize = () => this.container.length;
+  isEmpty = () => this.length === 0;
 }
 
 export const QueuePage: React.FC = () => {
   
-    const [stack] = useState<Stack<{symbol: string, state: ElementStates}>>(new Stack<{symbol: string, state: ElementStates}>());
+    const [queue] = useState<Queue<{symbol: string, state: ElementStates} | null>>(new Queue(7));
     const [value, setValue] = useState('');
-    const [stackContainer, setStackContainer] = useState<Array<{symbol: string, state: ElementStates}>>(stack.container);
+    const [stackContainer, setStackContainer] = useState<Array<{symbol: string, state: ElementStates} | null>>(queue.container);
   
-    const [pushDisabled, setPushDisabled] = useState(true);
-    const [popDisabled, setPopDisabled] = useState(true);
+    const [enqueueDisabled, setEnqueueDisabled] = useState(true);
+    const [dequeueDisabled, setDequeueDisabled] = useState(true);
     const [clearDisabled, setClearDisabled] = useState(true);
   
     const changeState = (arr: any, status: ElementStates, start: number) => {
-      arr[start].state = status;
+      if(arr[start].state) {
+        arr[start].state = status;
+      }
     }
   
     const pause = async (delay: number) => {
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   
-    const changeStateRender = (arr: Array<{symbol: string, state: ElementStates}>, status: ElementStates, startIndex: number) => {
+    const changeStateRender = (arr: Array<{symbol: string, state: ElementStates} | null>, status: ElementStates, startIndex: number) => {
       changeState(arr, status, startIndex)
-      setStackContainer([...stack.container])
+      setStackContainer([...queue.container])
     }
   
-    const changeStateRenderAsync = async (arr: Array<{symbol: string, state: ElementStates}>, status: ElementStates, startIndex: number) => {
+    const changeStateRenderAsync = async (arr: Array<{symbol: string, state: ElementStates} | null>, status: ElementStates, startIndex: number) => {
       await pause(SHORT_DELAY_IN_MS)
       changeState(arr, status, startIndex)
-      setStackContainer([...stack.container])
+      setStackContainer([...queue.container])
     }
   
     useEffect(() => {
-      stackContainer.length !== 0 ? setPopDisabled(false) :  setPopDisabled(true);
-      stackContainer.length !== 0 ? setClearDisabled(false) :  setClearDisabled(true);
-    }, [stackContainer])
+      queue.length !== 0 ? setDequeueDisabled(false) :  setDequeueDisabled(true);
+      queue.length !== 0 ? setClearDisabled(false) :  setClearDisabled(true);
+    }, [queue.length])
 
   return (
     <SolutionLayout title="Очередь">
@@ -80,7 +119,7 @@ export const QueuePage: React.FC = () => {
         <Input 
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             setValue(e.target.value);
-            setPushDisabled(false)
+            setEnqueueDisabled(false)
           }} 
           value={value}
           type={'text'}
@@ -91,61 +130,86 @@ export const QueuePage: React.FC = () => {
         <Button
           onClick={async () => {
             setValue('');
-            stack.push({
+            queue.enqueue ({
               symbol: value,
               state: ElementStates.Default
             });
+            changeStateRender(queue.container, ElementStates.Changing, queue.tail);
+            await changeStateRenderAsync(queue.container, ElementStates.Default, queue.tail);
             
-            changeStateRender(stack.container, ElementStates.Changing, stack.container.length - 1);
-            await changeStateRenderAsync(stack.container, ElementStates.Default, stack.container.length - 1);
-
-            setPushDisabled(true)
+            setEnqueueDisabled(true)
           }}
           extraClass={'mr-6'}
           text={'Добавить'}
-          disabled={pushDisabled}
+          disabled={enqueueDisabled}
         />
 
         <Button
           onClick={async () => {
-            changeStateRender(stack.container, ElementStates.Changing, stack.container.length - 1);
+            changeStateRender(queue.container, ElementStates.Changing, queue.head);
             await pause(500)
-            stack.pop()
-            setStackContainer([...stack.container])
+            queue.dequeue()
+            setStackContainer([...queue.container])
           }}
           
           extraClass={'mr-40'}
           text={'Удалить'}
-          disabled={popDisabled}
+          disabled={dequeueDisabled}
         />
         <Button
         text={'Очистить'}
           onClick={() => {
-            stack.delete()
-            setStackContainer([...stack.container])
+            queue.delete()
+            setStackContainer([...queue.container])
           }}
           disabled={clearDisabled}
         />
       </div>
 
       <ul className={`${st.list}`}>
-        {stackContainer.map((symbol, index) =>
-        index === stackContainer.length - 1 ?
-          <Circle
-            extraClass={`${st.column}`}
-            index={index}
-            letter={symbol.symbol}
-            head={'top'}
-            state={symbol.state}
-            key={index} />
-          :
-          <Circle
-            extraClass={`${st.column}`}
-            index={index}
-            letter={symbol.symbol}
-            state={symbol.state}
-            key={index} />
-        )}
+
+          {function() {
+            let content = [];
+            for (let i = 0; i < queue.container.length; i++) {
+              content.push(
+                i === queue.head && i === queue.tail && queue.container[i]?.symbol ?
+                <Circle
+                index={i}
+                letter={queue.container[i]?.symbol}
+                state={queue.container[i]?.state}
+                key={i}
+                head={'head'}
+                tail={'tail'}
+                />
+                :
+                i === queue.head && queue.container[i]?.symbol ?
+                <Circle
+                index={i}
+                letter={queue.container[i]?.symbol}
+                state={queue.container[i]?.state}
+                key={i}
+                head={'head'}
+                />
+                :
+                i === queue.tail && queue.container[i]?.symbol ?
+                <Circle
+                index={i}
+                letter={queue.container[i]?.symbol}
+                state={queue.container[i]?.state}
+                key={i}
+                tail={'tail'}
+                />
+                :
+                <Circle
+                index={i}
+                letter={queue.container[i]?.symbol}
+                state={queue.container[i]?.state}
+                key={i}
+                />
+              )
+            }
+            return content
+          }()}
       </ul>
     </SolutionLayout>
   );
