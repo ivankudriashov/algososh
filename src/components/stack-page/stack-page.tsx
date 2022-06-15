@@ -6,39 +6,7 @@ import { Circle } from "../ui/circle/circle";
 import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import st from "./stack.module.css"
-
-interface IStack<T> {
-  push: (item: T) => void;
-  pop: () => void;
-  delete: () => void;
-  peak: () => T | null;
-} 
-
-class Stack<T> implements IStack<T> {
-  container: T[] = [];
-
-  push = (item: T): void => {
-    this.container.push(item)
-  };
-
-  pop = (): void => {
-    this.container.pop()
-  };
-
-  delete = (): void => {
-    this.container = []
-  }
-
-  peak = (): T | null => {
-    if(this.container.length !== 0) {
-      return this.container[this.container.length - 1]
-    } else {
-      return null;
-    }
-  };
-
-  getSize = () => this.container.length;
-}
+import { Stack } from "../util/classes"
 
 export const StackPage: React.FC = () => {
   const [stack] = useState<Stack<{symbol: string, state: ElementStates}>>(new Stack<{symbol: string, state: ElementStates}>());
@@ -49,7 +17,7 @@ export const StackPage: React.FC = () => {
   const [popDisabled, setPopDisabled] = useState(true);
   const [clearDisabled, setClearDisabled] = useState(true);
 
-  const changeState = (arr: any, status: ElementStates, start: number) => {
+  const changeState = (arr: Array<{symbol: string, state: ElementStates}>, status: ElementStates, start: number) => {
     arr[start].state = status;
   }
 

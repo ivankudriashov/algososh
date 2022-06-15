@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Fragment, useEffect, useState } from "react";
+import React, { ChangeEvent, Fragment, ReactNode, useEffect, useState } from "react";
 import { DELAY_IN_MS } from "../../constants/delays";
 import { ElementStates } from "../../types/element-states";
 import { Button } from "../ui/button/button";
@@ -7,209 +7,15 @@ import { ArrowIcon } from "../ui/icons/arrow-icon";
 import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import st from "./list.module.css"
-
-class Node<T> {
-  value: T
-  next: Node<T> | null
-  constructor(value: T, next?: Node<T> | null) {
-    this.value = value;
-    this.next = (next === undefined ? null : next);
-  }
-}
-
-interface ILinkedList<T> {
-  append: (element: T) => void;
-  prepend: (element: T) => void;
-  insertAt: (element: T, position: number) => void;
-  getSize: () => number;
-  print: () => void;
-  getArray: () => void;
-  shift: () => void;
-  pop: () => void;
-  deleteAt: (position: number) => void;
-}
-
-class LinkedList<T> implements ILinkedList<T> {
-  head: Node<T> | null;
-  tail: Node<T> | null;
-  size: number;
-  constructor() {
-    this.head = null;
-    this.tail = null;
-    this.size = 0;
-  }
-
-  insertAt(element: T, index: number) {
-    if (index < 0 || index > this.size) {
-      console.log('Enter a valid index');
-      return;
-    } else {
-      const node = new Node(element);
-
-      if (index === 0) {
-        node.next = this.head;
-        this.head = node;
-      } else if(this.head) {
-        let curr = this.head;
-        let currIndex = 0;
-
-        while(currIndex + 1 < index && curr.next) {
-          curr = curr.next;
-          currIndex++;
-        }
-        
-        let trap = curr.next;
-
-        curr.next = node
-        node.next = trap
-        this.tail = curr.next
-      }
-      this.size++;
-    }
-  }
-
-  deleteAt(index: number) {
-    if (index < 0 || index > this.size) {
-      console.log('Enter a valid index');
-      return;
-    } else {
-      if (index === 0) {
-        let current = this.head;
-        if(current !== null){
-          this.head = current.next
-        }
-      } else if(index === this.size - 1) {
-        if (this.head === null) {
-          throw new Error("stack is empty");
-        }
-    
-        let current = this.head;
-        let prev = null;
-    
-          while (current.next) {
-            prev = current
-            current = current.next;
-          }
-    
-          if(prev) {
-            prev.next = null
-            this.tail = prev
-          }
-      } else if(this.head) {
-        let curr = this.head;
-        let currIndex = 0;
-
-        while(currIndex + 1 < index && curr.next) {
-          curr = curr.next;
-          currIndex++;
-        }
-        console.log(curr)
-        let trap = curr.next;
-        if(trap) {
-          curr.next = trap.next
-        }
-      }
-      this.size--;
-    }
-  }
-
-  prepend(element: T) {
-    const node = new Node(element);
-    let current;
-
-    if (this.head === null) {
-      this.head = node;
-      this.tail = node;
-    } else {
-      current = this.head;
-    
-      this.head = new Node(element);
-      
-      this.head.next = current
-    }
-    this.size++;
-  }
-
-  append(element: T) {
-    const node = new Node(element);
-    let current;
-
-    if (this.head === null) {
-      this.head = node;
-      this.tail = node;
-    } else {
-      current = this.head;
-      while (current.next) {
-        current = current.next;
-      }
-
-      current.next = node;
-      this.tail = current.next;
-    }
-    this.size++;
-  }
-
-  shift() {
-    let current = this.head;
-    if(current !== null){
-      this.head = current.next
-
-      this.size--;
-    }
-  }
-
-  pop() {
-    if (this.head === null) {
-      throw new Error("stack is empty");
-    }
-
-    let current = this.head;
-    let prev = null;
-
-      while (current.next) {
-        prev = current
-        current = current.next;
-      }
-
-      if(prev) {
-        prev.next = null
-        this.tail = prev
-        this.size--;
-      }
-  };
-
-  getSize() {
-    return this.size;
-  }
-
-  getArray() {
-    let curr = this.head;
-    let res = [];
-    while (curr) {
-      res.push(curr.value);
-      curr = curr.next;
-    }
-    return res
-  }
-
-  print() {
-    let curr = this.head;
-    let res = '';
-    while (curr) {
-      res += `${curr.value} `;
-      curr = curr.next;
-    }
-    console.log(res);
-  }
-
-}
+import {LinkedList} from "../util/classes"
 
 export const ListPage: React.FC = () => {
 
   const [inputSymbolValue, setInputSymbolValue] = useState<string>('');
   const [inputIndexValue, setIndexSymbolValue] = useState<string>('');
 
-  const [list] = useState<LinkedList<any>>(new LinkedList());
+  const [list] = useState<LinkedList<string | number>>(new LinkedList());
+
   const [listItems, setListItems] = useState<Array<{ symbol: string | number; state: ElementStates; }>>([]);
 
   const [isNeedSmallCircleTop, setIsNeedSmallCircleTop] = useState<boolean>(false);
@@ -217,7 +23,7 @@ export const ListPage: React.FC = () => {
   const [indexToRenderSmallCirclesTop, setIndexToRenderSmallCirclesTop] = useState<number>(0);
   const [indexToRenderSmallCirclesBottom, setIndexToRenderSmallCirclesBottom] = useState<number>(0);
 
-  const [symbolFolSmallCircle, setSymbolFolSmallCircle] = useState<any>();
+  const [symbolFolSmallCircle, setSymbolFolSmallCircle] = useState<string | number>();
 
   const [isInputValueDisabled, setIsInputValueDisabled] = useState<boolean>(false);
   const [isInputIndexDisabled, setIsInputIndexDisabled] = useState<boolean>(false);
@@ -238,11 +44,12 @@ export const ListPage: React.FC = () => {
   const [deleteByIndexButtonLoader, setDeleteByIndexButtonLoader] = useState<boolean>(false);
 
   useEffect(() => {
-    let randomArray = ramdomArr(4, 3);
+    const randomArray = ramdomArr(4, 3);
     for (let i = 0; i < randomArray.length; i++) {
       list.append(randomArray[i]);
     }
     setListItems(getArray(randomArray));
+
   }, [list])
 
   const changeSymbolState = (arr: Array<{ symbol: string | number; state: ElementStates; }>, state: ElementStates, index: number) => {
@@ -333,7 +140,7 @@ export const ListPage: React.FC = () => {
     }
   }
 
-  const renderSmallCirclesInPosition = (position: "top" | "bottom", keyInd: number, symbol?: any) => {
+  const renderSmallCirclesInPosition = (position: "top" | "bottom", keyInd: number, symbol?: string | number) => {
     return (
       <>
         {
@@ -362,7 +169,7 @@ export const ListPage: React.FC = () => {
   }
 
   const renderCircles = () => {
-    let circlesContainer: Array<any> = [];
+    let circlesContainer: Array<ReactNode> = [];
     for (let i = 0; i < listItems.length; i++) {
       circlesContainer
         .push(
@@ -446,11 +253,15 @@ export const ListPage: React.FC = () => {
             setIsInputValueDisabled(false);
             setIsInputIndexDisabled(false);
 
-            setIsAddTailButtonDisabled(false);
+            setIsAddHeadButtonDisabled(true);
+            setIsAddTailButtonDisabled(true);
             setIsDeleteHeadButtonDisabled(false);
             setIsDeleteTailButtonDisabled(false);
-            setIsAddByIndexButtonDisabled(false);
+            setIsAddByIndexButtonDisabled(true);
             setDeleteByIndexButtonLoader(false);
+
+            setInputSymbolValue('');
+            setIndexSymbolValue('');
           }}
         />
 
@@ -482,11 +293,15 @@ export const ListPage: React.FC = () => {
             setIsInputValueDisabled(false);
             setIsInputIndexDisabled(false);
 
-            setIsAddHeadButtonDisabled(false);
+            setIsAddHeadButtonDisabled(true);
+            setIsAddTailButtonDisabled(true);
             setIsDeleteHeadButtonDisabled(false);
             setIsDeleteTailButtonDisabled(false);
-            setIsAddByIndexButtonDisabled(false);
-            setIsDeleteByIndexButtonDisabled(false);
+            setIsAddByIndexButtonDisabled(true);
+            setIsDeleteByIndexButtonDisabled(true);
+
+            setInputSymbolValue('');
+            setIndexSymbolValue('');
           }}
         />
 
@@ -519,11 +334,15 @@ export const ListPage: React.FC = () => {
             setIsInputValueDisabled(false);
             setIsInputIndexDisabled(false);
 
-            setIsAddHeadButtonDisabled(false);
-            setIsAddTailButtonDisabled(false);
+            setIsAddHeadButtonDisabled(true);
+            setIsAddTailButtonDisabled(true);
+            setIsDeleteHeadButtonDisabled(false);
             setIsDeleteTailButtonDisabled(false);
-            setIsAddByIndexButtonDisabled(false);
-            setIsDeleteByIndexButtonDisabled(false);
+            setIsAddByIndexButtonDisabled(true);
+            setIsDeleteByIndexButtonDisabled(true);
+
+            setInputSymbolValue('');
+            setIndexSymbolValue('');
           }}
         />
 
@@ -556,11 +375,15 @@ export const ListPage: React.FC = () => {
             setIsInputValueDisabled(false);
             setIsInputIndexDisabled(false);
 
-            setIsAddHeadButtonDisabled(false);
-            setIsAddTailButtonDisabled(false);
+            setIsAddHeadButtonDisabled(true);
+            setIsAddTailButtonDisabled(true);
             setIsDeleteHeadButtonDisabled(false);
-            setIsAddByIndexButtonDisabled(false);
-            setIsDeleteByIndexButtonDisabled(false);
+            setIsDeleteTailButtonDisabled(false);
+            setIsAddByIndexButtonDisabled(true);
+            setIsDeleteByIndexButtonDisabled(true);
+
+            setInputSymbolValue('');
+            setIndexSymbolValue('');
           }}
         />
       </div>
@@ -615,11 +438,15 @@ export const ListPage: React.FC = () => {
             setIsInputValueDisabled(false);
             setIsInputIndexDisabled(false);
 
-            setIsAddHeadButtonDisabled(false);
-            setIsAddTailButtonDisabled(false);
+            setIsAddHeadButtonDisabled(true);
+            setIsAddTailButtonDisabled(true);
             setIsDeleteHeadButtonDisabled(false);
             setIsDeleteTailButtonDisabled(false);
-            setIsDeleteByIndexButtonDisabled(false);
+            setIsAddByIndexButtonDisabled(true);
+            setIsDeleteByIndexButtonDisabled(true);
+
+            setInputSymbolValue('');
+            setIndexSymbolValue('');
           }}
         />
 
@@ -661,11 +488,15 @@ export const ListPage: React.FC = () => {
             setIsInputValueDisabled(false);
             setIsInputIndexDisabled(false);
 
-            setIsAddHeadButtonDisabled(false);
-            setIsAddTailButtonDisabled(false);
+            setIsAddHeadButtonDisabled(true);
+            setIsAddTailButtonDisabled(true);
             setIsDeleteHeadButtonDisabled(false);
             setIsDeleteTailButtonDisabled(false);
-            setIsAddByIndexButtonDisabled(false);
+            setIsAddByIndexButtonDisabled(true);
+            setIsDeleteByIndexButtonDisabled(true);
+
+            setInputSymbolValue('');
+            setIndexSymbolValue('');
           }}
         />
       </div>

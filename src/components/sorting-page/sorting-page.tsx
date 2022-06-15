@@ -48,7 +48,7 @@ export const SortingPage: React.FC = () => {
     changeStateRender(arr, status, startIndex, endIndex)
   }
 
-  const changeState = (arr: any, status: ElementStates, start: number, end?: number) => {
+  const changeState = (arr: Array<{symbol: number, state: ElementStates}>, status: ElementStates, start: number, end?: number) => {
     arr[start].state = status;
     
     if(end) {

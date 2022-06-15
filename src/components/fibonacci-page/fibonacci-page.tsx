@@ -7,6 +7,7 @@ import st from "./fib.module.css"
 
 export const FibonacciPage: React.FC = () => {
   const [value, setValue] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [array, setArray] = useState<Array<string>>([]);
 
@@ -14,14 +15,14 @@ export const FibonacciPage: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, delay))
   }
 
-  const fibonachi = (n: any) => {  
+  const fibonachi = (n: string | number) => {  
     let one = 0;
     let two = 1;
     let arr = [];
 
     arr[0] = '1'
 
-    for(let i = 1; i <= n; i++ ) {
+    for(let i = 1; i < n; i++ ) {
 
       let current = one + two;
 
@@ -40,7 +41,7 @@ export const FibonacciPage: React.FC = () => {
     setLoading(true);
 
     setArray([]);
-    let arr = fibonachi(value);
+    const arr = fibonachi(value);
 
     for (let i = 0; i < arr.length; i++) {
       await pause(500);
@@ -62,6 +63,7 @@ export const FibonacciPage: React.FC = () => {
           extraClass={`${st.input} mr-6`} 
           isLimitText={true} 
           max={19}
+          maxLength={2}
         />
         <Button 
           text="Развернуть"
@@ -69,6 +71,7 @@ export const FibonacciPage: React.FC = () => {
             showFib(value)
           }}
           isLoader={loading}
+          disabled={!value || +value > 20}
         />
       </div>
 

@@ -9,7 +9,7 @@ import st from "./string.module.css"
 
 export const StringComponent: React.FC = () => {
 
-  const [array, setArray] = useState<Array<{symbol: string, state: ElementStates.Default}>>([])
+  const [array, setArray] = useState<Array<{symbol: string, state: ElementStates}>>([])
   const [loading, setLoading] = useState(false);
 
   const renderInputsNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,13 +21,13 @@ export const StringComponent: React.FC = () => {
     }))
   }
   
-  const swap = (arr: Array<{symbol: string, state: ElementStates.Default}>, firstIndex: number, secondIndex: number): void => {    
+  const swap = (arr: Array<{symbol: string, state: ElementStates}>, firstIndex: number, secondIndex: number): void => {    
     const temp = arr[firstIndex];
     arr[firstIndex] = arr[secondIndex];
     arr[secondIndex] = temp;
   }
 
-  const reverseStringAlgo = async (arr: Array<{symbol: string, state: ElementStates.Default}>, callback: any, change: string, modified: string) => {
+  const reverseStringAlgo = async (arr: Array<{symbol: string, state: ElementStates}>, callback: any, change: string, modified: string) => {
     let start = 0;
     let end = arr.length - 1
 
@@ -51,13 +51,13 @@ export const StringComponent: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, delay))
   }
 
-  const changeStateRender = async (arr: Array<{symbol: string, state: ElementStates.Default}>, status: string, startIndex: number, endIndex: number) => {
+  const changeStateRender = async (arr: Array<{symbol: string, state: ElementStates}>, status: ElementStates, startIndex: number, endIndex: number) => {
     changeState(arr, status, startIndex, endIndex)
     setArray([...arr])
     await pause(SHORT_DELAY_IN_MS)
   }
 
-  const changeState = (arr: any, status: string, start: number, end: number) => {
+  const changeState = (arr: Array<{symbol: string, state: ElementStates}>, status: ElementStates, start: number, end: number) => {
     arr[start].state = status;
     
     if(end) {
@@ -65,7 +65,7 @@ export const StringComponent: React.FC = () => {
     }
   }
 
-  const reverseString = async (arr: Array<{symbol: string, state: ElementStates.Default}>) => {
+  const reverseString = async (arr: Array<{symbol: string, state: ElementStates}>) => {
     await reverseStringAlgo(arr, changeStateRender, ElementStates.Changing, ElementStates.Modified);
     setLoading(false);
   }

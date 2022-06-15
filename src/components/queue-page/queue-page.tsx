@@ -6,80 +6,14 @@ import { Circle } from "../ui/circle/circle";
 import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import st from "./queue.module.css"
+import { Queue } from "../util/classes"
 
-interface IQueue<T> {
-  enqueue: (item: T) => void;
-  dequeue: () => void;
-  peak: () => T | null;
-}
+type TItem = {symbol: string, state: ElementStates;}
 
-class Queue<T> implements IQueue<T> {
-  container: (T | null)[] = [];
-  head = 0;
-  tail = 0;
-  private readonly size: number = 0;
-  length: number = 0;
-
-  constructor(size: number) {
-    this.size = size;
-    this.container = Array(size);
-  }
-
-  enqueue = (item: T) => {
-    if (this.length >= this.size) {
-      throw new Error("Maximum length exceeded");
-    }
-
-    if(this.tail === this.size-1 || (this.length === 0 && this.tail === this.head)){
-      this.tail = 0
-    } else {
-      this.tail++;
-    }
-    this.length++;
-    this.container[this.tail] = item;
-  };
-
-  dequeue = () => {
-    if (this.isEmpty()) {
-      throw new Error("No elements in the queue");
-    }
-
-    delete(this.container[this.head])
-    if(this.head === this.size-1){
-      this.head = 0;
-    } else {
-      this.head++;
-    }
-    this.length--;
-  };
-
-  delete = (): void => {
-    for(let i = 0; i < this.container.length; i++) {
-      delete(this.container[i])
-    }
-    this.head = 0;
-    this.tail = 0;
-    this.length = 0;
-  }
-
-  peak = (): T | null => {
-    if (this.isEmpty()) {
-      throw new Error("No elements in the queue");
-    }
-    
-    if(this.isEmpty()){
-      return null;
-    } else {
-      return this.container[this.head];
-    }
-  };
-
-  isEmpty = () => this.length === 0;
-}
 
 export const QueuePage: React.FC = () => {
   
-    const [queue] = useState<Queue<{symbol: string, state: ElementStates} | null>>(new Queue(7));
+    const [queue] = useState<Queue<{symbol: string, state: ElementStates}>>(new Queue<{symbol: string, state: ElementStates}>(7));
     const [value, setValue] = useState('');
     const [stackContainer, setStackContainer] = useState<Array<{symbol: string, state: ElementStates} | null>>(queue.container);
   
@@ -87,9 +21,10 @@ export const QueuePage: React.FC = () => {
     const [dequeueDisabled, setDequeueDisabled] = useState(true);
     const [clearDisabled, setClearDisabled] = useState(true);
   
-    const changeState = (arr: any, status: ElementStates, start: number) => {
-      if(arr[start].state) {
-        arr[start].state = status;
+    const changeState = (arr: Array<TItem | null>, status: ElementStates, start: number) => {
+      const item = arr[start]
+      if (item) {
+        item.state = status
       }
     }
   
@@ -97,12 +32,12 @@ export const QueuePage: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   
-    const changeStateRender = (arr: Array<{symbol: string, state: ElementStates} | null>, status: ElementStates, startIndex: number) => {
+    const changeStateRender = (arr: Array<TItem | null>, status: ElementStates, startIndex: number) => {
       changeState(arr, status, startIndex)
       setStackContainer([...queue.container])
     }
   
-    const changeStateRenderAsync = async (arr: Array<{symbol: string, state: ElementStates} | null>, status: ElementStates, startIndex: number) => {
+    const changeStateRenderAsync = async (arr: Array<TItem | null>, status: ElementStates, startIndex: number) => {
       await pause(SHORT_DELAY_IN_MS)
       changeState(arr, status, startIndex)
       setStackContainer([...queue.container])
