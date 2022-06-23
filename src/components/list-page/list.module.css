@@ -1,0 +1,50 @@
+.container {
+    display: flex;
+    justify-content: center;
+}
+
+.input {
+    width: 204px;
+}
+
+.list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 40px 16px;
+
+    width: 944px;
+    padding: 0;
+    margin: 70px auto 0;
+}
+
+.circles {
+    position: relative;
+}
+
+.smallCircle {
+    background-color: white;
+    z-index: 5;
+}
+
+.smallCirclesTop {
+    position: absolute;
+    bottom: 88px;
+    left: 12px;
+}
+
+.smallCirclesBottom {
+    position: absolute;
+    top: 118px;
+    left: 12px;
+}
+
+
+.button {
+    width: 175px;
+}
+
+.buttonLarge {
+    width: 362px;
+}
