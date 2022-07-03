@@ -7,6 +7,8 @@ import { Input } from "../ui/input/input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import st from "./string.module.css"
 
+import { reverseStringAlgo } from "../util/functions"
+
 export const StringComponent: React.FC = () => {
 
   const [array, setArray] = useState<Array<{symbol: string, state: ElementStates}>>([])
@@ -19,32 +21,6 @@ export const StringComponent: React.FC = () => {
         state: ElementStates.Default
       }
     }))
-  }
-  
-  const swap = (arr: Array<{symbol: string, state: ElementStates}>, firstIndex: number, secondIndex: number): void => {    
-    const temp = arr[firstIndex];
-    arr[firstIndex] = arr[secondIndex];
-    arr[secondIndex] = temp;
-  }
-
-  const reverseStringAlgo = async (arr: Array<{symbol: string, state: ElementStates}>, callback: any, change: string, modified: string) => {
-    let start = 0;
-    let end = arr.length - 1
-
-    if (!arr) {
-      return;
-    }
-
-
-    while (start <= end) {
-      await callback(arr, change, start, end)
-      swap(arr, start, end);
-      await callback(arr, modified, start, end)
-      start++;
-      end--;
-    }
-
-    return arr;
   }
 
   const pause = async (delay: number) => {
@@ -85,6 +61,7 @@ export const StringComponent: React.FC = () => {
               reverseString(array);
             }}
             isLoader={loading}
+            disabled={array.length ? false : true}
           />
         </div>
 

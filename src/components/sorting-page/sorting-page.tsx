@@ -8,8 +8,9 @@ import { RadioInput } from "../ui/radio-input/radio-input";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import st from "./sorting.module.css"
 
-export const SortingPage: React.FC = () => {
+import { bubbleSortAlg, selectionSortAlg } from "../util/functions"
 
+export const SortingPage: React.FC = () => {
   const [checkboxValue, setCheckboxValue] = useState('selectionSort')
   const [arrayForSort, setArrayForSort] = useState<Array<{symbol: number, state: ElementStates}>>([])
 
@@ -56,31 +57,8 @@ export const SortingPage: React.FC = () => {
     }
   }
 
-  const swap = (arr: Array<{symbol: number, state: ElementStates}>, firstIndex: number, secondIndex: number): void => {
-    const temp = arr[firstIndex];
-    arr[firstIndex] = arr[secondIndex];
-    arr[secondIndex] = temp;
-  };
-
-  const bubbleSort = async (arr: Array<{symbol: number, state: ElementStates}>, sort: string) => {
-    for (let i = 0; i < arr.length; i++) {
-      for (let j = 0; j < arr.length - i - 1; j++) {
-        changeStateRender(arr, ElementStates.Changing, j, j + 1);
-        if(sort === 'down') {
-          if (arr[j].symbol < arr[j + 1].symbol) {
-            swap(arr, j, j + 1);
-          }
-        } else if(sort === 'up') {
-          if (arr[j].symbol > arr[j + 1].symbol) { 
-            swap(arr, j, j + 1);
-          }
-        }
-        await changeStateRenderAsync(arr, ElementStates.Default, j, j + 1)
-        changeStateRender(arr, ElementStates.Modified, j + 1);
-
-      }
-      changeStateRender(arr, ElementStates.Modified, 0);
-    }
+  const bubbleSort = (arr: Array<{symbol: number, state: ElementStates}>, sort: string) => {
+    bubbleSortAlg(arr, sort, changeStateRender, changeStateRenderAsync)
 
     setUpDisabled(false);
     setDownDisabled(false);
@@ -88,35 +66,9 @@ export const SortingPage: React.FC = () => {
     setUpIsLoading(false);
     setDownIsLoading(false);
   }
-
+  
   const selectionSort = async (arr: Array<{symbol: number, state: ElementStates}>, sort: string) => {
-    const { length } = arr;
-    for (let i = 0; i < length - 1; i++) {
-      let maxInd = i;
-      await changeStateRenderAsync(arr, ElementStates.Changing, maxInd);
-      
-      for (let j = i + 1; j < length; j++) {
-        changeStateRender(arr, ElementStates.Changing, j);
-
-        if(sort === 'down') {
-          if(arr[j].symbol > arr[maxInd].symbol) {
-            maxInd = j
-          }
-        } else if(sort === 'up') {
-          if(arr[j].symbol < arr[maxInd].symbol) {
-            maxInd = j
-          }
-        }
-        await changeStateRenderAsync(arr, ElementStates.Default, j);
-      }
-      if (maxInd !== i) {
-        swap(arr, i, maxInd)
-        changeStateRender(arr, ElementStates.Default, maxInd);
-      }
-      changeStateRender(arr, ElementStates.Modified, i);
-    }
-
-    changeStateRender(arr, ElementStates.Modified, arr.length - 1);
+    selectionSortAlg(arr, sort, changeStateRender, changeStateRenderAsync)
 
     setUpDisabled(false);
     setDownDisabled(false);
